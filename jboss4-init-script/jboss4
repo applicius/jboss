@@ -1,0 +1,53 @@
+#!/bin/bash
+#
+# description: JBoss 4.2.3.GA service
+#
+# For Red-Hat-based distributions such as Fedora, RHEL, CentOS.
+#	       
+### BEGIN INIT INFO
+# Provides: jboss4
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: JBoss 4 service
+### END INIT INFO
+
+. /etc/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/jboss4 ] && . /etc/sysconfig/jboss4
+
+if [ "$JBOSS_HOME" = "" ]; then
+  JBOSS_HOME="/opt/jboss-4.2.3.GA"
+fi
+
+if [ "$BIND_ADDR" = "" ]; then
+  BIND_ADDR="127.0.0.1"
+fi
+
+LOCK_FILE="/var/lock/subsys/jboss4.lck"
+PID_FILE="/var/run/jboss4.pid"
+
+rtrn=1
+
+case "$1" in
+  start)
+	action "Starting JBoss4 service"
+
+	export LAUNCH_JBOSS_IN_BACKGROUND="yes"
+	daemonize -p "$PID_FILE" -l "$LOCK_FILE" -c "$JBOSS_HOME/bin/" "$JBOSS_HOME/bin/run.sh" -b "$BIND_ADDR"
+	;;
+
+  stop)
+	action "Stopping JBoss4 service" 
+	kill `cat "$PID_FILE"`
+	rm -f $LOCK_FILE
+	;;
+
+  status)
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status}"
+	;;
+esac

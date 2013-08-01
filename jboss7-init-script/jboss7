@@ -1,0 +1,54 @@
+#!/bin/bash
+#
+# description: JBoss 7 service
+#
+# For Red-Hat-based distributions such as Fedora, RHEL, CentOS.
+#	       
+### BEGIN INIT INFO
+# Provides: jboss7
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: JBoss 7 service
+### END INIT INFO
+
+. /etc/init.d/functions
+
+# pull in sysconfig settings
+[ -f /etc/sysconfig/jboss7 ] && . /etc/sysconfig/jboss7
+
+if [ "$JBOSS_HOME" = "" ]; then
+  JBOSS_HOME="/opt/jboss-as-7.1.1.Final"
+fi
+
+if [ "$BIND_ADDR" = "" ]; then
+  BIND_ADDR="127.0.0.1"
+fi
+
+LOCK_FILE="/var/lock/subsys/jboss-as-standalone.lck"
+PID_FILE="/var/run/jboss7.pid"
+
+rtrn=1
+
+case "$1" in
+  start)
+action "Starting JBoss7 service"
+
+export LAUNCH_JBOSS_IN_BACKGROUND="yes"
+export JBOSS_PIDFILE="$PID_FILE"
+daemonize -l "$LOCK_FILE" -c "$JBOSS_HOME/bin/" "$JBOSS_HOME/bin/standalone.sh" -b "$BIND_ADDR"
+;;
+
+  stop)
+action "Stopping JBoss7 service" 
+kill `cat "$PID_FILE"`
+rm -f $LOCK_FILE
+;;
+
+  status)
+;;
+  *)
+echo $"Usage: $0 {start|stop|status}"
+;;
+esac
